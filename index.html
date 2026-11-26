@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>板塊大冒險</title>
+<style>
+:root{--bg:#12263a;--panel:#1b3a57;--sand:#f2e6cf;--lava:#e8590c;--sea:#2a9d8f;--ink:#0d1b2a;--ok:#74c69d;--bad:#ff8a80}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--sand);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.6rem;margin:8px 0 4px}
+.sub{margin:0 0 12px;opacity:.8}
+nav{display:flex;gap:8px;margin-bottom:12px}
+nav button{flex:1;padding:10px;border:2px solid var(--sand);background:transparent;color:var(--sand);border-radius:10px;font-size:1rem;cursor:pointer}
+nav button.on{background:var(--sand);color:var(--ink);font-weight:700}
+.card{background:var(--panel);border-radius:14px;padding:14px}
+svg{width:100%;height:auto;display:block;background:#0e1f30;border-radius:10px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.btn{padding:12px 8px;border:0;border-radius:10px;background:var(--sea);color:#fff;font-size:1rem;font-weight:700;cursor:pointer}
+.btn.lava{background:var(--lava)}
+.btn.sand{background:var(--sand);color:var(--ink)}
+.btn:focus-visible,nav button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.info{min-height:5.5em}
+.info b{color:#ffd8a8}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;padding:12px;border-radius:10px;border:2px solid #3b5f82;background:transparent;color:var(--sand);font-size:1rem;cursor:pointer}
+.opt.right{border-color:var(--ok);background:#1f4d3b}
+.opt.wrong{border-color:var(--bad);background:#5a2a2a}
+.bar{display:flex;justify-content:space-between;margin-bottom:8px;font-weight:700}
+.fb{margin-top:10px;padding:10px;border-radius:10px;background:#0e1f30}
+.big{font-size:2.4rem;font-weight:800;text-align:center;margin:8px 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>板塊大冒險</h1>
+<p class="sub">先動手做實驗，再挑戰闖關。</p>
+<nav>
+<button id="tLab" class="on">實驗室</button>
+<button id="tMap">地震帶</button>
+<button id="tQuiz">闖關</button>
+</nav>
+
+<section id="lab" class="card">
+<svg id="lab-svg" viewBox="0 0 400 220" role="img" aria-label="板塊運動動畫"></svg>
+<p class="sub" style="margin:10px 0 0">板塊邊界</p>
+<div class="row" style="margin-top:4px">
+<button class="btn lava" data-m="c">推擠</button>
+<button class="btn" data-m="d">拉開</button>
+<button class="btn sand" data-m="s">擦過</button>
+</div>
+<p class="sub" style="margin:0">斷層</p>
+<div class="row" style="margin-top:4px">
+<button class="btn" data-m="n">正斷層</button>
+<button class="btn lava" data-m="r">逆斷層</button>
+<button class="btn sand" data-m="p">平移斷層</button>
+</div>
+<div class="row" style="margin:4px 0 8px;grid-template-columns:1fr"><button class="btn sand" data-m="h">認識上盤和下盤</button></div>
+<p class="sub" style="margin:0">火山</p>
+<div class="row" style="margin-top:4px">
+<button class="btn lava" data-m="v1">活火山</button>
+<button class="btn" data-m="v2">休眠火山</button>
+<button class="btn sand" data-m="v3">死火山</button>
+</div>
+<div class="info" id="info">按下按鈕，看看兩個板塊會發生什麼事。</div>
+</section>
+
+<section id="quiz" class="card hide">
+<div id="qbox"></div>
+</section>
+
+<section id="map" class="card hide">
+<div class="row" style="grid-template-columns:1fr 1fr;margin-top:0">
+<button class="btn" id="mWorld">全球三大地震帶</button>
+<button class="btn sand" id="mPac">環太平洋地震帶</button>
+</div>
+
+<div id="worldBox">
+<svg id="world-svg" viewBox="0 0 400 220" role="img" aria-label="全球三大地震帶示意圖"></svg>
+<p class="sub" style="margin:6px 0 0;font-size:.85rem">示意圖：陸地形狀已簡化。太平洋被切在左右兩邊，橘線其實是連成一圈。</p>
+<div class="row" style="grid-template-columns:1fr 1fr">
+<button class="btn lava" data-b="ring">環太平洋</button>
+<button class="btn" style="background:#ffd43b;color:#0d1b2a" data-b="alp">地中海－喜馬拉雅</button>
+<button class="btn" style="background:#5eead4;color:#0d1b2a" data-b="rid">大洋中脊</button>
+<button class="btn sand" data-b="all">全部</button>
+</div>
+<div class="info" id="world-info"></div>
+</div>
+
+<div id="pacBox" class="hide">
+<svg id="map-svg" viewBox="0 0 400 220" role="img" aria-label="環太平洋地震帶示意圖"></svg>
+<p class="sub" style="margin:6px 0 0;font-size:.85rem">示意圖：陸地形狀與位置已簡化。點亮點看各地的板塊。</p>
+<div class="info" id="map-info"><b>環太平洋地震帶</b>（橘色虛線）圍繞著太平洋，全世界大約九成的地震和大約七成五的活火山都集中在這裡，所以也叫「火環」。</div>
+</div>
+</section>
+</main>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+const INFO={
+c:"<b>聚合邊界</b>：兩個板塊互相推擠。會形成<b>山脈、海溝、火山</b>，也容易發生強烈地震。台灣就是菲律賓海板塊推擠歐亞板塊而成。",
+d:"<b>張裂邊界</b>：兩個板塊互相遠離。岩漿從裂縫冒出，形成新的地殼，例如<b>大西洋中洋脊</b>、東非大裂谷。",
+n:"<b>正斷層</b>：地殼被<b>拉開</b>（張力），上盤相對下盤往下滑。上盤是斷層面上方的岩層，下盤是下方的岩層。",
+r:"<b>逆斷層</b>：地殼被<b>擠壓</b>（壓力），上盤相對下盤往上推。921 地震的車籠埔斷層就是逆移斷層。",
+p:"<b>平移斷層</b>：岩層<b>水平錯開</b>，幾乎沒有上下位移，所以公路、河流、圍籬會被橫向錯開。例如聖安地列斯斷層。",
+v1:"<b>活火山</b>：岩漿庫還有岩漿，而且最近噴發過或隨時可能噴發。會噴出岩漿、火山灰和氣體。宜蘭外海的龜山島是台灣的活火山。",
+v2:"<b>休眠火山</b>：歷史上噴發過，岩漿庫還有岩漿，目前暫時沒有噴發，可能只冒出水蒸氣或噴氣。它<b>有可能再醒來</b>，不能掉以輕心。",
+v3:"<b>死火山</b>：岩漿庫已經冷卻凝固，不會再噴發，山體也被風雨慢慢侵蝕。<br><small>註：現在科學家更常說「活火山／非活火山」，因為很難確定一座火山會不會再噴發。</small>",
+h:"<b>上盤</b>是斷層面上方的岩層，<b>下盤</b>是斷層面下方的岩層。口訣：想像你走在斷層面上，<b>頭上的是上盤，腳下的是下盤</b>。判斷正斷層或逆斷層，就看上盤相對下盤是往下還是往上。",
+s:"<b>錯動邊界</b>：兩個板塊水平擦過。地殼累積能量後突然滑動，產生地震，例如美國<b>聖安地列斯斷層</b>。"
+};
+
+/* ---- 畫面：依模式與進度 t(0~1) 重畫 ---- */
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e}
+function drawFault(svg,m,t){
+  svg.innerHTML="";
+  const sh=t>0.85?(Math.random()*4-2):0;
+  const d=(m==="n"?1:-1)*40*t,dx=0.49*d,dy=0.871*d;
+  const defs=el("defs",{},svg);
+  el("polygon",{points:"10,50 150,50 240,210 10,210"},el("clipPath",{id:"cf"},defs));
+  el("polygon",{points:"150,50 390,50 390,210 240,210"},el("clipPath",{id:"ch"},defs));
+  const bands=[[50,"#c9a66b"],[90,"#8e6e53"],[130,"#5a7fa8"],[170,"#2a9d8f"]];
+  const root=el("g",{transform:`translate(${sh},0)`},svg);
+  [["cf",0,0,60,"下盤"],["ch",dx,dy,320,"上盤"]].forEach(([id,x,y,lx,name])=>{
+    const o=el("g",{transform:`translate(${x},${y})`},root);
+    const i=el("g",{"clip-path":`url(#${id})`},o);
+    bands.forEach(b=>el("rect",{x:0,y:b[0],width:400,height:40,fill:b[1]},i));
+    const tx=el("text",{x:lx,y:130,fill:"#fff","font-size":16,"font-weight":700,"text-anchor":"middle"},o);tx.textContent=name;
+  });
+  el("line",{x1:150,y1:50,x2:240,y2:210,stroke:"#fff","stroke-width":2,"stroke-dasharray":"6 4"},root);
+  const a=m==="n"?["M120 28 h-45 l10 -8 m-10 8 l10 8","M280 28 h45 l-10 -8 m10 8 l-10 8"]:["M75 28 h45 l-10 -8 m10 8 l-10 8","M325 28 h-45 l10 -8 m-10 8 l10 8"];
+  a.forEach(p=>el("path",{d:p,stroke:"#f2e6cf","stroke-width":3,fill:"none"},root));
+  const c=el("text",{x:200,y:16,fill:"#f2e6cf","font-size":13,"text-anchor":"middle"},root);c.textContent="剖面圖";
+}
+function drawRoad(svg,t){
+  svg.innerHTML="";
+  const sh=t>0.85?(Math.random()*4-2):0;
+  const g=el("g",{transform:`translate(${sh},0)`},svg);
+  const ly=40+25*t,ry=40-25*t;
+  [[20,ly,"#6a994e"],[205,ry,"#8fb573"]].forEach(([x,y,c])=>{
+    el("rect",{x:x,y:y,width:175,height:140,fill:c,rx:4},g);
+    el("rect",{x:x,y:y+63,width:175,height:14,fill:"#4a4a4a"},g);
+    el("line",{x1:x,x2:x+175,y1:y+70,y2:y+70,stroke:"#ffd43b","stroke-width":2,"stroke-dasharray":"8 6"},g);
+  });
+  el("line",{x1:200,x2:200,y1:10,y2:210,stroke:"#fff","stroke-width":2,"stroke-dasharray":"6 4"},g);
+  const a=el("text",{x:110,y:20,fill:"#f2e6cf","font-size":14,"text-anchor":"middle"},g);a.textContent="↓ 往下";
+  const b=el("text",{x:290,y:212,fill:"#f2e6cf","font-size":14,"text-anchor":"middle"},g);b.textContent="↑ 往上";
+  const c=el("text",{x:200,y:216,fill:"#f2e6cf","font-size":12,"text-anchor":"middle"},g);c.textContent="俯視圖";
+}
+function drawVolcano(svg,m,t){
+  svg.innerHTML="";
+  const jit=m==="v1"&&t>0.2&&t<1?(Math.random()*3-1.5):0;
+  const g=el("g",{transform:`translate(${jit},0)`},svg);
+  const peak=m==="v3"?118:92;
+  const mag=m==="v1"?"#e8590c":m==="v2"?"#b5541a":"#5c5c5c";
+  el("rect",{x:0,y:170,width:400,height:50,fill:"#4a3a2e"},g);
+  el("ellipse",{cx:200,cy:200,rx:70,ry:14,fill:mag},g);
+  el("rect",{x:192,y:peak,width:16,height:90,fill:mag},g);
+  el("polygon",{points:`70,170 178,${peak} 222,${peak} 330,170`,fill:m==="v3"?"#7d8f69":"#8a6a4f"},g);
+  el("rect",{x:192,y:peak,width:16,height:8,fill:m==="v3"?"#5c5c5c":mag},g);
+  const lab=el("text",{x:200,y:204,fill:"#fff","font-size":11,"text-anchor":"middle"},g);lab.textContent="岩漿庫";
+  const name={v1:"活火山：正在噴發",v2:"休眠火山：有岩漿，暫時沒噴發",v3:"死火山：岩漿庫已冷卻"}[m];
+  const nt=el("text",{x:10,y:20,fill:"#f2e6cf","font-size":14},g);nt.textContent=name;
+  if(m==="v1"){
+    [-1,1].forEach(d=>el("line",{x1:200+d*22,y1:peak,x2:200+d*(22+50*t),y2:peak+75*t,stroke:"#e8590c","stroke-width":5,"stroke-linecap":"round"},g));
+    for(let j=0;j<5;j++)el("circle",{cx:184+j*8,cy:peak-20-35*t-j*3,r:8+16*t,fill:"#9aa0a6",opacity:0.7*t},g);
+    for(let i=0;i<14;i++){
+      const ti=Math.max(0,Math.min(1,t*1.3-i*0.03));if(ti<=0)continue;
+      const x=200+((i*37)%61-30)*ti*1.6,y=peak-4-(120*ti-100*ti*ti)*(0.6+((i*13)%5)/10);
+      el("circle",{cx:x,cy:y,r:3+(i%3),fill:i%2?"#ffa94d":"#e8590c"},g);
+    }
+  }else if(m==="v2"){
+    for(let i=0;i<3;i++)el("circle",{cx:198+i*3,cy:peak-10-i*14-10*t,r:5+i*2,fill:"#e9ecef",opacity:0.6-0.15*i},g);
+  }
+}
+function drawHW(svg,t){
+  svg.innerHTML="";
+  el("polygon",{points:"10,50 150,50 240,210 10,210",fill:"#2a9d8f"},svg);
+  el("polygon",{points:"150,50 390,50 390,210 240,210",fill:"#d9733b"},svg);
+  el("line",{x1:150,y1:50,x2:240,y2:210,stroke:"#fff","stroke-width":3,"stroke-dasharray":"8 5"},svg);
+  const T=(x,y,sz,txt,w,o)=>{const e=el("text",{x:x,y:y,fill:"#fff","font-size":sz,"font-weight":w,"text-anchor":"middle",opacity:o},svg);e.textContent=txt};
+  T(65,125,26,"下盤",800,1);T(320,125,26,"上盤",800,1);
+  T(65,150,13,"斷層面下方（腳下）",400,t);T(320,150,13,"斷層面上方（頭上）",400,t);
+  T(200,30,14,"斷層面",700,1);
+  el("path",{d:"M200 36 L196 62",stroke:"#fff","stroke-width":2,fill:"none"},svg);
+}
+function draw(svg,m,t){
+  if(m==="h"){drawHW(svg,t);return}
+  if(m==="v1"||m==="v2"||m==="v3"){drawVolcano(svg,m,t);return}
+  if(m==="n"||m==="r"){drawFault(svg,m,t);return}
+  if(m==="p"){drawRoad(svg,t);return}
+  svg.innerHTML="";
+  const shake=t>0.85&&m!=="d"?(Math.random()*4-2):0;
+  const g=el("g",{transform:`translate(${shake},0)`},svg);
+  if(m==="c"){
+    el("rect",{x:0,y:140,width:400,height:80,fill:"#7a2e0e"},g);
+    el("rect",{x:10,y:100,width:180+30*t,height:40,fill:"#2a9d8f",rx:4},g);
+    el("rect",{x:210-30*t,y:100,width:180+30*t,height:40,fill:"#5a7fa8",rx:4},g);
+    el("polygon",{points:`${200-20-60*t},100 200,${100-75*t} ${200+20+60*t},100`,fill:"#b08968"},g);
+    el("path",{d:"M5 70 h45 l-10 -8 m10 8 l-10 8",stroke:"#f2e6cf","stroke-width":3,fill:"none"},g);
+    el("path",{d:"M395 70 h-45 l10 -8 m-10 8 l10 8",stroke:"#f2e6cf","stroke-width":3,fill:"none"},g);
+  }else if(m==="d"){
+    const lx=20-20*t,rx=210+20*t;
+    el("rect",{x:0,y:140,width:400,height:80,fill:"#7a2e0e"},g);
+    el("rect",{x:lx,y:100,width:170,height:40,fill:"#2a9d8f",rx:4},g);
+    el("rect",{x:rx,y:100,width:170,height:40,fill:"#5a7fa8",rx:4},g);
+    el("rect",{x:lx+170,y:92,width:rx-lx-170,height:60,fill:"#e8590c"},g);
+    el("path",{d:"M150 60 h-45 l10 -8 m-10 8 l10 8",stroke:"#f2e6cf","stroke-width":3,fill:"none"},g);
+    el("path",{d:"M250 60 h45 l-10 -8 m10 8 l-10 8",stroke:"#f2e6cf","stroke-width":3,fill:"none"},g);
+  }else{
+    const ly=40+25*t,ry=40-25*t;
+    el("rect",{x:20,y:ly,width:175,height:140,fill:"#2a9d8f",rx:4},g);
+    el("rect",{x:205,y:ry,width:175,height:140,fill:"#5a7fa8",rx:4},g);
+    el("line",{x1:20,x2:195,y1:ly+70,y2:ly+70,stroke:"#fff","stroke-width":4,"stroke-dasharray":"10 6"},g);
+    el("line",{x1:205,x2:380,y1:ry+70,y2:ry+70,stroke:"#fff","stroke-width":4,"stroke-dasharray":"10 6"},g);
+    el("path",{d:"M30 24 v-0 M100 25 v0",stroke:"none"},g);
+    const a=el("text",{x:110,y:20,fill:"#f2e6cf","font-size":14,"text-anchor":"middle"},g);a.textContent="↓ 往下";
+    const b=el("text",{x:290,y:212,fill:"#f2e6cf","font-size":14,"text-anchor":"middle"},g);b.textContent="↑ 往上";
+  }
+}
+function animate(svg,m,done){
+  const start=performance.now(),dur=2200;
+  (function f(now){
+    const t=Math.min((now-start)/dur,1);
+    draw(svg,m,t);
+    if(t<1)requestAnimationFrame(f);else if(done)done();
+  })(start);
+}
+
+/* ---- 實驗室 ---- */
+const labSvg=document.getElementById("lab-svg");
+draw(labSvg,"c",0);
+document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
+  const m=b.dataset.m;
+  document.getElementById("info").innerHTML="觀察中…";
+  animate(labSvg,m,()=>document.getElementById("info").innerHTML=INFO[m]);
+});
+
+/* ---- 闖關 ---- */
+const BANK=[
+{m:"c",q:"動畫中兩個板塊正在互相推擠，這是哪一種邊界？",o:["聚合邊界","張裂邊界","錯動邊界"],a:0,e:"互相推擠就是聚合邊界。"},
+{m:"d",q:"動畫中兩個板塊正在遠離，中間冒出岩漿。這是哪一種邊界？",o:["聚合邊界","張裂邊界","錯動邊界"],a:1,e:"遠離、岩漿冒出形成新地殼，是張裂邊界。"},
+{m:"s",q:"動畫中兩個板塊水平擦過，這是哪一種邊界？",o:["聚合邊界","張裂邊界","錯動邊界"],a:2,e:"水平方向互相擦過，是錯動邊界。"},
+{q:"台灣位在哪兩個板塊的交界附近？",o:["太平洋板塊與南極洲板塊","菲律賓海板塊與歐亞板塊","印度洋板塊與非洲板塊"],a:1,e:"菲律賓海板塊向西北推擠歐亞板塊，所以台灣有高山也常有地震。"},
+{q:"大西洋中洋脊是哪一種板塊邊界？",o:["聚合邊界","張裂邊界","錯動邊界"],a:1,e:"大西洋兩側的板塊慢慢遠離，岩漿在中間生成新地殼。"},
+{q:"下列哪一組地形最常出現在聚合邊界？",o:["高山、海溝、火山","平原、湖泊、沙丘","三角洲、河口、沙洲"],a:0,e:"板塊推擠、擠壓與隱沒，會形成山脈、海溝與火山。"},
+{q:"美國加州的聖安地列斯斷層屬於哪一種邊界？",o:["聚合邊界","張裂邊界","錯動邊界"],a:2,e:"兩側板塊水平錯動，是錯動邊界的代表。"},
+{m:"n",q:"動畫中，上盤相對下盤往下滑。這是哪一種斷層？",o:["正斷層","逆斷層","平移斷層"],a:0,e:"上盤往下滑、地殼被拉開，是正斷層。"},
+{m:"r",q:"動畫中，上盤相對下盤往上推。這是哪一種斷層？",o:["正斷層","逆斷層","平移斷層"],a:1,e:"上盤往上推、地殼被擠壓，是逆斷層。"},
+{m:"p",q:"動畫中，公路被橫向錯開，幾乎沒有上下位移。這是哪一種斷層？",o:["正斷層","逆斷層","平移斷層"],a:2,e:"岩層水平錯開，是平移斷層。"},
+{q:"921 地震的車籠埔斷層屬於哪一種斷層？",o:["正斷層","逆斷層","平移斷層"],a:1,e:"車籠埔斷層是逆移斷層，板塊擠壓讓上盤往上推，造成地表隆起。"},
+{q:"正斷層通常是受到什麼力量形成？",o:["拉張力（地殼被拉開）","擠壓力（地殼被推擠）","水平剪切力"],a:0,e:"正斷層是地殼被拉開時，上盤順著斷層面往下滑形成的。"},
+{m:"v1",q:"動畫中的火山正在噴出岩漿和火山灰，岩漿庫裡有岩漿。這是哪一種火山？",o:["活火山","休眠火山","死火山"],a:0,e:"正在噴發、岩漿庫還有岩漿，是活火山。"},
+{m:"v2",q:"動畫中的火山只冒出一點水蒸氣，岩漿庫還有岩漿，但目前沒有噴發。這是哪一種火山？",o:["活火山","休眠火山","死火山"],a:1,e:"還有岩漿、暫時沒噴發，是休眠火山，之後可能再噴發。"},
+{m:"v3",q:"動畫中的火山岩漿庫已經冷卻，不會再噴發。這是哪一種火山？",o:["活火山","休眠火山","死火山"],a:2,e:"岩漿庫冷卻凝固、不會再噴發，是死火山。"},
+{q:"休眠火山和死火山最大的差別是什麼？",o:["休眠火山還有岩漿，之後可能再噴發","休眠火山比較高","死火山一定在海底"],a:0,e:"休眠火山的岩漿庫還有岩漿，死火山的岩漿庫已經冷卻，不會再噴發。"},
+{q:"宜蘭外海的龜山島是哪一種火山？",o:["死火山","活火山","它不是火山"],a:1,e:"龜山島是台灣東北外海的活火山，島上有噴氣孔，海底也有溫泉。"},
+{q:"斷層面上方的岩層叫什麼？",o:["上盤","下盤","斷層帶"],a:0,e:"斷層面上方的岩層是上盤，下方的是下盤。口訣：頭上是上盤，腳下是下盤。"},
+{q:"正斷層發生時，上盤相對下盤怎麼移動？",o:["往下滑","往上推","完全不動"],a:0,e:"正斷層是地殼被拉開，上盤相對下盤往下滑。"},
+{q:"環太平洋地震帶有什麼特色？",o:["全世界大部分的地震和火山集中在這裡","只會發生海底地震","沒有火山"],a:0,e:"大約九成的地震和大約七成五的活火山都在這條帶上，所以也叫「火環」。"},
+{q:"台灣位在環太平洋地震帶上嗎？",o:["是，所以常有地震","不是，台灣離太平洋很遠","只有澎湖在上面"],a:0,e:"台灣位在菲律賓海板塊與歐亞板塊的交界附近，屬於環太平洋地震帶。"},
+{q:"環太平洋地震帶為什麼有這麼多地震和火山？",o:["沿線有很多板塊推擠、隱沒的邊界","因為太平洋的水很深","因為這裡靠近赤道"],a:0,e:"環太平洋沿線有許多板塊聚合邊界，板塊推擠和隱沒讓地震與火山特別多。"},
+{q:"下列哪一個不是全球三大地震帶之一？",o:["環太平洋地震帶","大洋中脊地震帶","赤道地震帶"],a:2,e:"三大地震帶是環太平洋地震帶、地中海－喜馬拉雅地震帶和大洋中脊地震帶。"},
+{q:"全世界地震最集中的是哪一條地震帶？",o:["環太平洋地震帶","地中海－喜馬拉雅地震帶","大洋中脊地震帶"],a:0,e:"環太平洋地震帶集中了大約九成的地震，是最大的地震帶。"},
+{q:"喜馬拉雅山是怎麼形成的？",o:["印度板塊推擠歐亞板塊","太平洋板塊被拉開","火山噴發堆積而成"],a:0,e:"印度板塊向北推擠歐亞板塊，地殼被擠高，形成喜馬拉雅山，也屬於地中海－喜馬拉雅地震帶。"},
+{q:"大洋中脊地震帶主要是哪一種板塊邊界？",o:["張裂邊界","聚合邊界","沒有板塊邊界"],a:0,e:"大洋中脊是板塊拉開的地方，岩漿冒出形成新地殼，地震多在海底，規模通常較小。"},
+{q:"澎湖著名的玄武岩柱狀節理是怎麼形成的？",o:["泥沙一層一層沉積","熔岩冷卻收縮產生裂縫","海浪長期磨出柱子"],a:1,e:"熔岩冷卻、體積收縮時裂開，形成規則的柱狀節理。"}
+];
+let Q=BANK.slice(0,10),qi=0,score=0,locked=false;
+function startQuiz(){Q=BANK.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]).slice(0,10);qi=0;score=0;showQ()}
+const qbox=document.getElementById("qbox");
+function showQ(){
+  if(qi>=Q.length){
+    const msg=score>=Q.length*0.8?"你是板塊小博士！":score>=Q.length*0.5?"不錯喔，再練習一次會更強。":"先回實驗室多玩幾次再來挑戰。";
+    qbox.innerHTML=`<div class="big">${score} / ${Q.length}</div><p style="text-align:center">${msg}</p><button class="btn sand" style="width:100%" id="again">再玩一次</button>`;
+    document.getElementById("again").onclick=startQuiz;
+    return;
+  }
+  const q=Q[qi];locked=false;
+  qbox.innerHTML=`<div class="bar"><span>第 ${qi+1} / ${Q.length} 題</span><span>得分 ${score}</span></div>`+
+  (q.m?`<svg id="qsvg" viewBox="0 0 400 220" role="img" aria-label="板塊動畫"></svg>`:"")+
+  `<p>${q.q}</p><div class="opts" id="opts"></div><div id="fb"></div>`;
+  if(q.m){const s=document.getElementById("qsvg");(function loop(){animate(s,q.m,()=>{if(document.getElementById("qsvg")===s)setTimeout(loop,600)})})()}
+  const box=document.getElementById("opts");
+  q.o.forEach((t,i)=>{const b=document.createElement("button");b.className="opt";b.textContent=t;b.onclick=()=>pick(i,b);box.appendChild(b)});
+}
+function pick(i,b){
+  if(locked)return;locked=true;
+  const q=Q[qi],all=document.querySelectorAll(".opt"),ok=i===q.a;
+  all[q.a].classList.add("right");
+  if(!ok)b.classList.add("wrong");else score++;
+  document.getElementById("fb").innerHTML=`<div class="fb"><b>${ok?"答對了！":"再想想看。"}</b> ${q.e}</div><button class="btn sand" style="width:100%;margin-top:10px" id="next">${qi+1<Q.length?"下一題":"看成績"}</button>`;
+  document.getElementById("next").onclick=()=>{qi++;showQ()};
+}
+
+/* ---- 地震帶地圖 ---- */
+(function(){
+  const svg=document.getElementById("map-svg"),info=document.getElementById("map-info");
+  [["0,0 112,0 108,18 98,26 100,40 92,56 84,70 82,92 70,100 50,96 0,96"],["114,40 122,44 119,60 112,66 109,58"],["102,92 108,94 106,104 101,100"],
+   ["62,118 95,116 112,122 96,128 66,126"],["64,142 106,138 120,160 108,184 76,186 62,164"],["142,176 150,170 150,186 144,190"],
+   ["400,0 282,0 280,14 296,24 306,44 312,62 322,80 334,94 344,100 400,100"],["346,108 392,112 380,146 358,184 346,200 340,184 340,140"]]
+   .forEach(a=>el("polygon",{points:a[0],fill:"#4a6a57"},svg));
+  const t=el("text",{x:205,y:112,fill:"#f2e6cf","font-size":16,"text-anchor":"middle",opacity:.35},svg);t.textContent="太平洋";
+  el("polyline",{points:"146,178 100,124 98,98 94,80 114,52 106,16 190,4 284,14 308,50 322,84 342,112 344,160 342,196",fill:"none",stroke:"#e8590c","stroke-width":3,"stroke-dasharray":"7 5","stroke-linejoin":"round"},svg);
+  const P=[
+   ["台灣",94,80,"r","<b>台灣</b>：菲律賓海板塊向西北推擠歐亞板塊，所以多地震、有高山。"],
+   ["日本",116,52,"r","<b>日本</b>：太平洋板塊和菲律賓海板塊往下隱沒，火山和地震都很多。"],
+   ["菲律賓",104,98,"r","<b>菲律賓</b>：位在菲律賓海板塊與歐亞板塊交界，火山和地震很多。"],
+   ["印尼",88,122,"l","<b>印尼</b>：印度－澳洲板塊往歐亞板塊下隱沒，有很多火山。"],
+   ["紐西蘭",146,178,"r","<b>紐西蘭</b>：太平洋板塊與印度－澳洲板塊交界，地震和火山活動頻繁。"],
+   ["阿拉斯加",286,16,"r","<b>阿拉斯加</b>：太平洋板塊往北美板塊下隱沒，形成長長的火山島弧。"],
+   ["加州",312,60,"r","<b>美國加州</b>：聖安地列斯斷層是平移斷層，太平洋板塊與北美板塊在這裡水平錯動。"],
+   ["智利",343,150,"l","<b>智利／安地斯山脈</b>：納斯卡板塊往南美板塊下隱沒，形成安地斯山脈，智利也有人類有儀器紀錄以來最大的地震。"]];
+  P.forEach(([n,x,y,side,txt])=>{
+    const g=el("g",{tabindex:0,role:"button","aria-label":n,style:"cursor:pointer"},svg);
+    el("circle",{cx:x,cy:y,r:14,fill:"transparent"},g);
+    el("circle",{cx:x,cy:y,r:6,fill:"#ffd43b",stroke:"#fff","stroke-width":1.5},g);
+    const lb=el("text",{x:side==="r"?x+9:x-9,y:y+4,fill:"#fff","font-size":11,"text-anchor":side==="r"?"start":"end"},g);lb.textContent=n;
+    const go=()=>{info.innerHTML=txt};
+    g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}};
+  });
+})();
+
+/* ---- 全球三大地震帶 ---- */
+(function(){
+  const svg=document.getElementById("world-svg"),info=document.getElementById("world-info");
+  ["14,22 66,10 118,18 132,34 112,52 98,66 88,80 72,70 52,52 28,40",
+   "88,84 118,92 140,112 134,140 118,170 106,196 98,170 96,130 86,102",
+   "96,8 120,6 124,18 108,22",
+   "170,40 200,26 260,20 330,24 372,40 368,64 350,78 330,92 316,110 300,96 290,80 266,92 250,88 232,90 214,84 200,76 184,68",
+   "176,92 214,88 236,98 244,124 232,152 216,176 202,174 192,150 180,118",
+   "322,148 358,144 372,162 356,178 332,176","310,116 340,120 352,128 320,130","364,50 372,56 368,70 362,62"]
+   .forEach(a=>el("polygon",{points:a,fill:"#4a6a57"},svg));
+  const B={
+   ring:{c:"#e8590c",pts:["14,24 28,40 52,52 72,70 88,84 96,100 96,130 98,170 106,196","372,38 366,60 352,86 346,106 334,122 366,142 388,186"],
+     t:"<b>環太平洋地震帶</b>：圍繞太平洋一圈，是<b>最大</b>的地震帶，大約九成的地震在這裡。沿線多是板塊推擠、隱沒的地方，火山也很多。<b>台灣就在這條帶上。</b>"},
+   alp:{c:"#ffd43b",pts:["196,78 214,80 232,84 252,86 272,84 292,92 306,106 320,120 334,124"],
+     t:"<b>地中海－喜馬拉雅地震帶</b>：從地中海經土耳其、伊朗、喜馬拉雅山，一路延伸到印尼，是第二大地震帶。成因是非洲板塊、印度板塊等和歐亞板塊碰撞擠壓，喜馬拉雅山就是這樣被擠高的。"},
+   rid:{c:"#5eead4",pts:["150,32 146,48 142,64 148,80 150,100 144,120 150,140 158,160 164,176 200,184 240,172 268,158","240,172 246,150 252,130"],
+     t:"<b>大洋中脊地震帶</b>：在海底，例如大西洋中洋脊、印度洋中洋脊。板塊在這裡<b>拉開</b>，岩漿冒出形成新地殼，地震多在海底，規模通常較小。"}
+  };
+  const L={};
+  Object.keys(B).forEach(k=>{L[k]=B[k].pts.map(pt=>el("polyline",{points:pt,fill:"none",stroke:B[k].c,"stroke-width":3.5,"stroke-linejoin":"round","stroke-linecap":"round"},svg))});
+  const tw=el("circle",{cx:352,cy:86,r:4,fill:"#fff",stroke:"#e8590c","stroke-width":2},svg);
+  const tt=el("text",{x:346,y:80,fill:"#fff","font-size":10,"text-anchor":"end"},svg);tt.textContent="台灣";
+  function show(k){
+    Object.keys(L).forEach(n=>L[n].forEach(e=>e.setAttribute("opacity",k==="all"||k===n?1:0.18)));
+    info.innerHTML=k==="all"?"全球有<b>三大地震帶</b>：環太平洋地震帶、地中海－喜馬拉雅地震帶、大洋中脊地震帶。點上面的按鈕，看每一條的位置和成因。":B[k].t;
+  }
+  document.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>show(b.dataset.b));
+  show("all");
+  const wb=document.getElementById("worldBox"),pb=document.getElementById("pacBox");
+  document.getElementById("mWorld").onclick=()=>{wb.classList.remove("hide");pb.classList.add("hide")};
+  document.getElementById("mPac").onclick=()=>{pb.classList.remove("hide");wb.classList.add("hide")};
+})();
+
+/* ---- 分頁 ---- */
+const tabs={tLab:"lab",tMap:"map",tQuiz:"quiz"};
+function showTab(id){
+  Object.keys(tabs).forEach(k=>{
+    document.getElementById(k).classList.toggle("on",k===id);
+    document.getElementById(tabs[k]).classList.toggle("hide",k!==id);
+  });
+  if(id==="tQuiz")startQuiz();
+}
+Object.keys(tabs).forEach(k=>document.getElementById(k).onclick=()=>showTab(k));
+</script>
+</body>
+</html>
